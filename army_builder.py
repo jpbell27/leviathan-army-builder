@@ -12,38 +12,6 @@ fighters_df = pd.read_csv("fighters.csv")
 # App title
 st.title("Aetherstream: Leviathan Army Builder")
 
-# Instructions block
-with st.expander("📖 How to Use the Leviathan Army Builder"):
-    st.markdown("""
-### Building Your Force
-
-1. **Select a faction** using the dropdown in the sidebar.
-2. **Add ships** by choosing their count. You can add multiple of the same ship.
-3. **Assign captains** in the same way as ships.
-
----
-
-### Adding Fighter Groups
-
-1. Choose a **fighter group type**: Flight (4 fighters) or Squadron (1–12 fighters).
-2. Pick your **generation method**:
-   - **Manual**: Choose fighter types and how many of each.
-   - **Auto by Points**: Randomly fills a group up to a chosen PV limit.
-   - **Random then Edit**: Auto-generates fighters, then lets you edit their counts.
-3. Set a **pilot experience level**.
-4. Optionally, name the group.
-5. Click **"Add Fighter Group"**.
-
----
-
-### Force Overview
-
-- All units are shown in the main table.
-- **Click ❌ to remove a fighter group**.
-- Total PV is shown at the bottom.
-- You can **download your force** as JSON or CSV.
-    """)
-
 # Sidebar
 st.sidebar.header("Build Your Force")
 faction = st.sidebar.selectbox("Select Faction", ships_df["Faction"].unique())
@@ -168,7 +136,9 @@ def generate_fighter_group(fighter_names, group_type):
     intercept = compute_stat("INT")
     strafe = compute_stat("STR")
 
+    # FIXED: Total ordnance is the raw sum of each fighter's ordnance times count
     ordnance = expanded["ORD"].dot(expanded["count"])
+
     qualities = ", ".join(sorted(set(q for q in expanded["Qualities"].dropna())))
     base_cost = round_up(expanded["COST"].sum())
     pilot_experience_cost = experience_cost_map[experience_level] * len(fighter_names)
@@ -215,16 +185,6 @@ for name, count in captain_counts.items():
     for _ in range(count):
         force.append({"Type": "Captain", "Name": name, "PV": row["Cost"]})
         total_pv += row["Cost"]
-
-st.subheader("Current Fighter Groups")
-for i, fighter_group in enumerate(st.session_state.fighter_groups):
-    cols = st.columns([5, 1])
-    with cols[0]:
-        st.write(fighter_group)
-    with cols[1]:
-        if st.button("❌", key=f"remove_{i}"):
-            st.session_state.fighter_groups.pop(i)
-            st.experimental_rerun()
 
 for fighter_group in st.session_state.fighter_groups:
     force.append(fighter_group)
