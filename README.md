@@ -74,4 +74,4 @@ Press “Add Fighter Group” to add it to your force.
 
     You can add multiple fighter groups, ships, and captains.
 
-    Removing individual fighter groups isn't supported yet in the UI (coming soon!).
+
