@@ -136,7 +136,9 @@ def generate_fighter_group(fighter_names, group_type):
     intercept = compute_stat("INT")
     strafe = compute_stat("STR")
 
-    ordnance = round_up(expanded["ORD"].sum())
+    # FIXED: Total ordnance is the raw sum of each fighter's ordnance times count
+    ordnance = expanded["ORD"].dot(expanded["count"])
+
     qualities = ", ".join(sorted(set(q for q in expanded["Qualities"].dropna())))
     base_cost = round_up(expanded["COST"].sum())
     pilot_experience_cost = experience_cost_map[experience_level] * len(fighter_names)
@@ -196,4 +198,5 @@ st.markdown(f"**Total PV: {total_pv}**")
 # Export
 st.download_button("Download JSON", data=json.dumps(force, indent=2), file_name="force.json")
 st.download_button("Download CSV", data=pd.DataFrame(force).to_csv(index=False), file_name="force.csv")
+
 
