@@ -27,6 +27,7 @@ filtered_captains = captains_df[captains_df["Faction"] == faction]
 filtered_fighters = fighters_df[fighters_df["Faction"] == faction]
 
 # Allow multiple of the same ship
+st.sidebar.subheader("Ships")
 ship_counts = {}
 for ship_name in filtered_ships["Ship Name"]:
     count = st.sidebar.number_input(f"{ship_name} (PV {filtered_ships[filtered_ships['Ship Name'] == ship_name]['Cost'].values[0]})", 0, 10, 0, key=f"ship_{ship_name}")
@@ -34,6 +35,7 @@ for ship_name in filtered_ships["Ship Name"]:
         ship_counts[ship_name] = count
 
 # Allow multiple of the same captain
+st.sidebar.subheader("Captains")
 captain_counts = {}
 for captain_name in filtered_captains["Name"]:
     count = st.sidebar.number_input(f"{captain_name} (PV {filtered_captains[filtered_captains['Name'] == captain_name]['Cost'].values[0]})", 0, 10, 0, key=f"captain_{captain_name}")
