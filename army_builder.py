@@ -185,7 +185,24 @@ for name, count in captain_counts.items():
     for _ in range(count):
         force.append({"Type": "Captain", "Name": name, "PV": row["Cost"]})
         total_pv += row["Cost"]
+    
+# Fighter groups with remove buttons
+st.subheader("Fighter Groups")
+for i, group in enumerate(st.session_state.fighter_groups):
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.markdown(f"**{group['Name']}** | Type: {group['Type']} | PV: {group['PV']}")
+        st.markdown(f"Fighters: {', '.join(group['Fighters'])}")
+        st.markdown(f"Stats – MAN: {group['MAN']}, DEF: {group['DEF']}, INT: {group['INT']}, STR: {group['STR']}, ORD: {group['ORD']}")
+        st.markdown(f"Qualities: {group['Qualities']} | Experience: {group['Experience']}")
+    with col2:
+        if st.button("Remove", key=f"remove_{i}"):
+            del st.session_state.fighter_groups[i]
+            st.experimental_rerun()
+            break
+    st.markdown("---")
 
+# Append remaining fighter groups to force
 for fighter_group in st.session_state.fighter_groups:
     force.append(fighter_group)
     total_pv += fighter_group["PV"]
