@@ -1,0 +1,21 @@
+Faction,Fighter,MAN,DEF,STR,INT,ORD,COST,Qualities
+CE,Apparition,7.0,4.0,0.0,5.5,1.0,2.0,Levdrive
+CE,Banshee,6.0,4.5,1.0,5.0,1.0,3.5,Levdrive
+CE,Geist,4.0,6.0,2.0,2.75,7.0,3.0,Levdrive
+CE,Phantom,4.0,2.5,0.5,4.0,1.0,3.25,Levdrive
+CE,Phoenix,5.0,7.0,3.5,3.25,4.0,4.0,Levdrive
+CE,Revenant,6.0,4.0,4.0,5.0,3.5,5.5,"Levdrive, Light"
+CE,Shadow,4.0,3.5,5.0,4.0,5.0,5.0,"Levdrive, Light, Streamlined"
+CE,Spectre,6.0,4.0,3.5,6.0,0.0,2.25,Levdrive
+CE,Spirit,7.0,2.5,4.0,3.5,1.0,2.25,Levdrive
+CE,Wraith,7.0,6.0,3.5,4.0,4.0,2.5,Levdrive
+TC,Arrow,4.0,2.5,5.0,5.0,0.0,4.25,Levdrive
+TC,Atlatl,5.0,5.0,3.0,4.0,1.0,2.5,Levdrive
+TC,Bolt,8.0,4.0,4.0,4.5,4.0,3.0,Levdrive
+TC,Chakram,6.0,4.0,5.0,2.5,1.0,3.25,"Levdrive, Light"
+TC,Chukonu,6.0,4.5,6.0,4.0,4.0,3.25,Levdrive
+TC,Crossbow,4.0,2.5,3.0,5.0,1.0,1.75,Levdrive
+TC,Dart,2.5,4.0,4.25,5.0,1.0,3.25,Levdrive
+TC,Shuriken,4.0,3.0,3.5,3.0,0.0,3.0,"Levdrive, Streamlined"
+TC,Slingshot,4.0,4.0,5.0,4.0,0.0,1.5,Light
+TC,Trebuchet,5.0,3.0,6.75,5.25,4.0,2.0,Levdrive
