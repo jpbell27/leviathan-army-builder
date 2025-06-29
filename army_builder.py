@@ -12,6 +12,11 @@ fighters_df = pd.read_csv("fighters.csv")
 # App title
 st.title("Aetherstream: Leviathan Army Builder")
 
+st.markdown(
+    "[📘 How to Use This App](https://github.com/jpbell27/leviathan-army-builder/blob/main/README.md)",
+    unsafe_allow_html=True
+)
+
 # Sidebar
 st.sidebar.header("Build Your Force")
 faction = st.sidebar.selectbox("Select Faction", ships_df["Faction"].unique())
