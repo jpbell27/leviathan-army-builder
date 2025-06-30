@@ -26,10 +26,18 @@ st.markdown(
 st.sidebar.header("Build Your Force")
 faction = st.sidebar.selectbox("Select Faction", ships_df["Faction"].unique())
 
-# Filter based on faction
-filtered_ships = ships_df[ships_df["Faction"] == faction]
-filtered_captains = captains_df[captains_df["Faction"] == faction]
-filtered_fighters = fighters_df[fighters_df["Faction"] == faction]
+#getting ships by faction
+@st.cache_data
+def filter_by_faction(faction, ships_df, captains_df, fighters_df):
+    return (
+        ships_df[ships_df["Faction"] == faction],
+        captains_df[captains_df["Faction"] == faction],
+        fighters_df[fighters_df["Faction"] == faction]
+    )
+
+filtered_ships, filtered_captains, filtered_fighters = filter_by_faction(
+    faction, ships_df, captains_df, fighters_df
+)
 
 # Allow multiple of the same ship
 st.sidebar.subheader("Ships")
