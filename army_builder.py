@@ -55,12 +55,14 @@ for captain_name in filtered_captains["Name"]:
     if count > 0:
         captain_counts[captain_name] = count
 
-# Fighter creation method
-# Session state to store fighter groups
+# Fighter group creation
+st.sidebar.markdown("---")
+st.sidebar.subheader("Fighter Group Creator")
+
+# Initialize state
 if "fighter_groups" not in st.session_state:
     st.session_state.fighter_groups = []
 
-# Pilot experience cost map
 experience_cost_map = {
     "Green": 0,
     "Rookie": 1,
@@ -68,10 +70,6 @@ experience_cost_map = {
     "Veteran": 3,
     "Elite": 4
 }
-
-# Fighter group creation
-st.sidebar.markdown("---")
-st.sidebar.subheader("Fighter Group Creator")
 
 fighter_selections = []
 new_group = None
@@ -82,8 +80,9 @@ with st.sidebar.form("fighter_form"):
     fighter_group_name = st.text_input("Optional Name for Fighter Group")
     experience_level = st.selectbox("Pilot Experience", list(experience_cost_map.keys()))
 
+    max_size = 4 if group_type == "Flight" else 12
+
     if fighter_method == "Manual":
-        max_size = 4 if group_type == "Flight" else 12
         current_total = 0
         for idx, row in filtered_fighters.iterrows():
             remaining = max_size - current_total
@@ -98,26 +97,23 @@ with st.sidebar.form("fighter_form"):
                 current_total += count
 
     elif fighter_method == "Auto by Points":
-        max_points = st.number_input("Max Points for Fighters", 0, 100, 10, key="auto_points")
-        size_limit = 4 if group_type == "Flight" else 12
+        max_points = st.number_input("Max Points for Fighters", 0, 100, 10)
         total = 0
-        while total < max_points and len(fighter_selections) < size_limit:
+        while total < max_points and len(fighter_selections) < max_size:
             row = filtered_fighters.sample(1).iloc[0]
             if total + row["COST"] <= max_points:
                 fighter_selections.append(row["Fighter"])
                 total += row["COST"]
 
     elif fighter_method == "Random then Edit":
-        size = 4 if group_type == "Flight" else 12
-        sampled_fighters = filtered_fighters.sample(n=size, replace=True)
-        for i, row in sampled_fighters.iterrows():
+        chosen_fighters = filtered_fighters.sample(n=max_size, replace=True)
+        for i, (_, row) in enumerate(chosen_fighters.iterrows()):
             count = st.number_input(
-                f"{row['Fighter']} (PV {row['COST']})",
-                0, size, 1, key=f"random_{i}_{row['Fighter']}"
+                f"{row['Fighter']} (PV {row['COST']})", 
+                0, max_size, 1, key=f"random_{i}_{row['Fighter']}"
             )
             fighter_selections.extend([row["Fighter"]] * count)
-        if len(fighter_selections) > size:
-            fighter_selections = fighter_selections[:size]
+        fighter_selections = fighter_selections[:max_size]
 
     submitted = st.form_submit_button("Add Fighter Group")
 
@@ -131,6 +127,7 @@ if submitted:
         new_group = generate_fighter_group(fighter_selections, group_type)
         st.session_state.fighter_groups.append(new_group)
         st.sidebar.success(f"{group_type} added!")
+
 
 
 
