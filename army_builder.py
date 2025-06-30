@@ -57,7 +57,7 @@ for captain_name in filtered_captains["Name"]:
 
 # Fighter creation method
 st.sidebar.markdown("---")
-    with st.sidebar.expander("🛠 Fighter Group Creator", expanded=True):
+with st.sidebar.expander("🛠 Fighter Group Creator", expanded=True):
     fighter_method = st.sidebar.radio("Fighter Group Setup", ["Manual", "Auto by Points", "Random then Edit"])
     group_type = st.sidebar.radio("Fighter Group Type", ["Flight", "Squadron"])
     fighter_group_name = st.sidebar.text_input("Optional Name for Fighter Group")
