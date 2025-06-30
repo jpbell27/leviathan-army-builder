@@ -219,7 +219,7 @@ available_captains = [name for name, count in captain_counts.items() for _ in ra
 if "ship_captain_assignments" not in st.session_state:
     st.session_state.ship_captain_assignments = {}
 
-st.subheader("🧭 Assign Captains to Ships")
+st.subheader("Assign Captains to Ships")
 
 for i, entry in enumerate(force):
     if entry["Type"] == "Ship":
