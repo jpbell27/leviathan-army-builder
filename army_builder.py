@@ -55,6 +55,68 @@ for captain_name in filtered_captains["Name"]:
     if count > 0:
         captain_counts[captain_name] = count
 
+
+
+# Round up function
+round_up = lambda x: math.ceil(x)
+
+# Generate fighter group stats
+def generate_fighter_group(fighter_names, group_type):
+    subset = filtered_fighters[filtered_fighters["Fighter"].isin(fighter_names)]
+    counts = pd.Series(fighter_names).value_counts()
+
+    expanded = pd.concat([
+        subset[subset["Fighter"] == name].iloc[[0]].copy().assign(count=int(count))
+        for name, count in counts.items()
+    ])
+
+    # Scale stats by count
+    for col in ["MAN", "DEF", "INT", "STR"]:
+        expanded[col] = expanded[col] * expanded["count"]
+
+    def compute_stat(col):
+        if group_type == "Flight":
+            return round_up(expanded[col].sum() / expanded["count"].sum())
+        elif group_type == "Squadron":
+            per_flight = max(1, int(len(fighter_names) / 3))
+            flights = [fighter_names[i * per_flight:(i + 1) * per_flight] for i in range(3)]
+            flight_averages = []
+            for flight in flights:
+                fsub = filtered_fighters[filtered_fighters["Fighter"].isin(flight)]
+                c = pd.Series(flight).value_counts()
+                fexp = pd.concat([
+                    fsub[fsub["Fighter"] == n].iloc[[0]].copy().assign(count=cnt)
+                    for n, cnt in c.items()
+                ])
+                fexp[col] = fexp[col] * fexp["count"]
+                flight_averages.append(round_up(fexp[col].sum() / fexp["count"].sum()))
+            return round_up(sum(flight_averages) / len(flight_averages))
+
+    man = compute_stat("MAN")
+    defense = compute_stat("DEF")
+    intercept = compute_stat("INT")
+    strafe = compute_stat("STR")
+    ordnance = int((expanded["ORD"] * expanded["count"]).sum())
+
+    qualities = ", ".join(sorted(set(q for q in expanded["Qualities"].dropna())))
+    base_cost = float((expanded["COST"] * expanded["count"]).sum())
+    pilot_experience_cost = experience_cost_map[experience_level] * int(expanded["count"].sum())
+    total_cost = round_up(base_cost + pilot_experience_cost)
+
+    return {
+        "Type": group_type,
+        "Name": fighter_group_name if fighter_group_name else f"{group_type} Group",
+        "Fighters": fighter_names,
+        "MAN": int(man),
+        "DEF": int(defense),
+        "INT": int(intercept),
+        "STR": int(strafe),
+        "ORD": ordnance,
+        "Qualities": qualities,
+        "Experience": experience_level,
+        "PV": total_cost
+    }
+
 # Fighter creation method
 st.sidebar.markdown("---")
 
@@ -131,66 +193,6 @@ with st.sidebar.expander("🛠 Fighter Group Creator", expanded=True):
             st.success(f"{group_type} added!")
 
 
-
-# Round up function
-round_up = lambda x: math.ceil(x)
-
-# Generate fighter group stats
-def generate_fighter_group(fighter_names, group_type):
-    subset = filtered_fighters[filtered_fighters["Fighter"].isin(fighter_names)]
-    counts = pd.Series(fighter_names).value_counts()
-
-    expanded = pd.concat([
-        subset[subset["Fighter"] == name].iloc[[0]].copy().assign(count=int(count))
-        for name, count in counts.items()
-    ])
-
-    # Scale stats by count
-    for col in ["MAN", "DEF", "INT", "STR"]:
-        expanded[col] = expanded[col] * expanded["count"]
-
-    def compute_stat(col):
-        if group_type == "Flight":
-            return round_up(expanded[col].sum() / expanded["count"].sum())
-        elif group_type == "Squadron":
-            per_flight = max(1, int(len(fighter_names) / 3))
-            flights = [fighter_names[i * per_flight:(i + 1) * per_flight] for i in range(3)]
-            flight_averages = []
-            for flight in flights:
-                fsub = filtered_fighters[filtered_fighters["Fighter"].isin(flight)]
-                c = pd.Series(flight).value_counts()
-                fexp = pd.concat([
-                    fsub[fsub["Fighter"] == n].iloc[[0]].copy().assign(count=cnt)
-                    for n, cnt in c.items()
-                ])
-                fexp[col] = fexp[col] * fexp["count"]
-                flight_averages.append(round_up(fexp[col].sum() / fexp["count"].sum()))
-            return round_up(sum(flight_averages) / len(flight_averages))
-
-    man = compute_stat("MAN")
-    defense = compute_stat("DEF")
-    intercept = compute_stat("INT")
-    strafe = compute_stat("STR")
-    ordnance = int((expanded["ORD"] * expanded["count"]).sum())
-
-    qualities = ", ".join(sorted(set(q for q in expanded["Qualities"].dropna())))
-    base_cost = float((expanded["COST"] * expanded["count"]).sum())
-    pilot_experience_cost = experience_cost_map[experience_level] * int(expanded["count"].sum())
-    total_cost = round_up(base_cost + pilot_experience_cost)
-
-    return {
-        "Type": group_type,
-        "Name": fighter_group_name if fighter_group_name else f"{group_type} Group",
-        "Fighters": fighter_names,
-        "MAN": int(man),
-        "DEF": int(defense),
-        "INT": int(intercept),
-        "STR": int(strafe),
-        "ORD": ordnance,
-        "Qualities": qualities,
-        "Experience": experience_level,
-        "PV": total_cost
-    }
 
 
 
