@@ -194,7 +194,9 @@ for name, count in captain_counts.items():
         total_pv += row["Cost"]
     
 # Fighter groups with remove buttons
-st.subheader("Fighter Groups")
+# Track index of group to remove
+index_to_remove = None
+
 for i, group in enumerate(st.session_state.fighter_groups):
     col1, col2 = st.columns([5, 1])
     with col1:
@@ -204,10 +206,12 @@ for i, group in enumerate(st.session_state.fighter_groups):
         st.markdown(f"Qualities: {group['Qualities']} | Experience: {group['Experience']}")
     with col2:
         if st.button("Remove", key=f"remove_{i}"):
-            del st.session_state.fighter_groups[i]
-            st.experimental_rerun()
-            break
+            index_to_remove = i
     st.markdown("---")
+
+# Apply removal outside loop
+if index_to_remove is not None:
+    st.session_state.fighter_groups.pop(index_to_remove)
 
 # Append remaining fighter groups to force
 for fighter_group in st.session_state.fighter_groups:
