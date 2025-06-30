@@ -193,9 +193,6 @@ with st.sidebar.expander("🛠 Fighter Group Creator", expanded=True):
             st.success(f"{group_type} added!")
 
 
-
-
-
 # Build force list
 force = []
 total_pv = 0
@@ -234,6 +231,19 @@ for i, entry in enumerate(force):
             "ship": ship_name,
             "captain": selected
         }
+
+# Count how many times each captain is assigned
+assigned_counts = {}
+for assignment in st.session_state.ship_captain_assignments.values():
+    cap = assignment["captain"]
+    if cap and cap != "None":
+        assigned_counts[cap] = assigned_counts.get(cap, 0) + 1
+
+# Compare to how many times that captain was selected
+for cap, assigned in assigned_counts.items():
+    allowed = captain_counts.get(cap, 0)
+    if assigned > allowed:
+        st.warning(f"⚠️ Captain '{cap}' assigned {assigned} times, but only {allowed} selected.")
         
 # Fighter groups with remove buttons
 # Track index of group to remove
@@ -259,6 +269,16 @@ if index_to_remove is not None:
 for fighter_group in st.session_state.fighter_groups:
     force.append(fighter_group)
     total_pv += fighter_group["PV"]
+
+# Attach assigned captains to ships in force list
+for i, entry in enumerate(force):
+    if entry["Type"] == "Ship":
+        key = f"assign_captain_{i}"
+        assignment = st.session_state.ship_captain_assignments.get(key)
+        if assignment and assignment["captain"] != "None":
+            entry["Captain"] = assignment["captain"]
+        else:
+            entry["Captain"] = "Unassigned"
 
 # Main output
 st.subheader("Current Force")
