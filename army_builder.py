@@ -4,10 +4,15 @@ import random
 import json
 import math
 
-# Load data from CSVs
-ships_df = pd.read_csv("ships.csv")
-captains_df = pd.read_csv("captains.csv")
-fighters_df = pd.read_csv("fighters.csv")
+@st.cache_data
+def load_data():
+    ships = pd.read_csv("ships.csv")
+    captains = pd.read_csv("captains.csv")
+    fighters = pd.read_csv("fighters.csv")
+    return ships, captains, fighters
+
+ships_df, captains_df, fighters_df = load_data()
+
 
 # App title
 st.title("Aetherstream: Leviathan Army Builder")
