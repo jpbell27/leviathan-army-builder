@@ -113,10 +113,11 @@ def generate_fighter_group(fighter_names, group_type):
     counts = pd.Series(fighter_names).value_counts()
 
     expanded = pd.concat([
-        subset[subset["Fighter"] == name].iloc[[0]].copy().assign(count=count)
+        subset[subset["Fighter"] == name].iloc[[0]].copy().assign(count=int(count))
         for name, count in counts.items()
     ])
 
+    # Scale stats by count
     for col in ["MAN", "DEF", "INT", "STR"]:
         expanded[col] = expanded[col] * expanded["count"]
 
@@ -142,28 +143,27 @@ def generate_fighter_group(fighter_names, group_type):
     defense = compute_stat("DEF")
     intercept = compute_stat("INT")
     strafe = compute_stat("STR")
-
-    # FIXED: Total ordnance is the raw sum of each fighter's ordnance times count
-    ordnance = expanded["ORD"].dot(expanded["count"])
+    ordnance = int((expanded["ORD"] * expanded["count"]).sum())
 
     qualities = ", ".join(sorted(set(q for q in expanded["Qualities"].dropna())))
-    base_cost = round_up(expanded["COST"].sum())
-    pilot_experience_cost = experience_cost_map[experience_level] * len(fighter_names)
+    base_cost = float((expanded["COST"] * expanded["count"]).sum())
+    pilot_experience_cost = experience_cost_map[experience_level] * int(expanded["count"].sum())
     total_cost = round_up(base_cost + pilot_experience_cost)
 
     return {
         "Type": group_type,
         "Name": fighter_group_name if fighter_group_name else f"{group_type} Group",
         "Fighters": fighter_names,
-        "MAN": man,
-        "DEF": defense,
-        "INT": intercept,
-        "STR": strafe,
+        "MAN": int(man),
+        "DEF": int(defense),
+        "INT": int(intercept),
+        "STR": int(strafe),
         "ORD": ordnance,
         "Qualities": qualities,
         "Experience": experience_level,
         "PV": total_cost
     }
+
 
 # Add group button
 if st.sidebar.button("Add Fighter Group"):
@@ -219,6 +219,12 @@ st.subheader("Current Force")
 st.write(pd.DataFrame(force))
 st.markdown(f"**Total PV: {total_pv}**")
 
-# Export
-st.download_button("Download JSON", data=json.dumps(force, indent=2), file_name="force.json")
-st.download_button("Download CSV", data=pd.DataFrame(force).to_csv(index=False), file_name="force.csv")
+# Convert all objects in force list to be JSON serializable
+serializable_force = []
+for entry in force:
+    clean_entry = {k: (int(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else v) for k, v in entry.items()}
+    serializable_force.append(clean_entry)
+
+# Download buttons
+st.download_button("Download JSON", data=json.dumps(serializable_force, indent=2), file_name="force.json")
+st.download_button("Download CSV", data=pd.DataFrame(serializable_force).to_csv(index=False), file_name="force.csv")
