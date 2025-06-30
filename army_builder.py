@@ -194,19 +194,6 @@ def generate_fighter_group(fighter_names, group_type):
         "PV": total_cost
     }
 
-
-# Add group button
-if st.sidebar.button("Add Fighter Group"):
-    size = len(fighter_selections)
-    if group_type == "Flight" and size != 4:
-        st.sidebar.error("A Flight must contain exactly 4 fighters.")
-    elif group_type == "Squadron" and (size < 1 or size > 12):
-        st.sidebar.error("A Squadron must contain between 1 and 12 fighters.")
-    else:
-        new_group = generate_fighter_group(fighter_selections, group_type)
-        st.session_state.fighter_groups.append(new_group)
-        st.sidebar.success(f"{group_type} added!")
-
 # Build force list
 force = []
 total_pv = 0
