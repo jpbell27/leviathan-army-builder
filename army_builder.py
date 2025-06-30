@@ -56,6 +56,7 @@ for captain_name in filtered_captains["Name"]:
         captain_counts[captain_name] = count
 
 # Fighter group creation
+# Fighter group creation
 st.sidebar.markdown("---")
 st.sidebar.subheader("Fighter Group Creator")
 
@@ -127,9 +128,6 @@ if submitted:
         new_group = generate_fighter_group(fighter_selections, group_type)
         st.session_state.fighter_groups.append(new_group)
         st.sidebar.success(f"{group_type} added!")
-
-
-
 
 # Round up function
 round_up = lambda x: math.ceil(x)
