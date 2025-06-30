@@ -211,7 +211,30 @@ for name, count in captain_counts.items():
     for _ in range(count):
         force.append({"Type": "Captain", "Name": name, "PV": row["Cost"]})
         total_pv += row["Cost"]
-    
+
+# Create a list of captains to assign
+available_captains = [name for name, count in captain_counts.items() for _ in range(count)]
+
+# Track assignments
+if "ship_captain_assignments" not in st.session_state:
+    st.session_state.ship_captain_assignments = {}
+
+st.subheader("🧭 Assign Captains to Ships")
+
+for i, entry in enumerate(force):
+    if entry["Type"] == "Ship":
+        ship_name = entry["Ship Name"]
+        key = f"assign_captain_{i}"
+        selected = st.selectbox(
+            f"Captain for {ship_name} #{i + 1}",
+            ["None"] + available_captains,
+            key=key
+        )
+        st.session_state.ship_captain_assignments[key] = {
+            "ship": ship_name,
+            "captain": selected
+        }
+        
 # Fighter groups with remove buttons
 # Track index of group to remove
 index_to_remove = None
