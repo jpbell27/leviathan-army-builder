@@ -56,20 +56,11 @@ for captain_name in filtered_captains["Name"]:
         captain_counts[captain_name] = count
 
 # Fighter creation method
-st.sidebar.markdown("---")
-st.sidebar.subheader("Fighter Group Creator")
+# Session state to store fighter groups
+if "fighter_groups" not in st.session_state:
+    st.session_state.fighter_groups = []
 
-with st.sidebar.form("fighter_form"):
-    fighter_method = st.radio("Fighter Group Setup", ["Manual", "Auto by Points", "Random then Edit"])
-    group_type = st.radio("Fighter Group Type", ["Flight", "Squadron"])
-    fighter_group_name = st.text_input("Optional Name for Fighter Group")
-    experience_level = st.selectbox("Pilot Experience", ["Green", "Rookie", "Regular", "Veteran", "Elite"])
-
-    submitted = st.form_submit_button("Configure Fighters")
-
-
-# Pilot Experience Level
-experience_level = st.sidebar.selectbox("Pilot Experience", ["Green", "Rookie", "Regular", "Veteran", "Elite"])
+# Pilot experience cost map
 experience_cost_map = {
     "Green": 0,
     "Rookie": 1,
@@ -78,18 +69,18 @@ experience_cost_map = {
     "Elite": 4
 }
 
+# Fighter group creation
 st.sidebar.markdown("---")
 st.sidebar.subheader("Fighter Group Creator")
+
+fighter_selections = []
+new_group = None
 
 with st.sidebar.form("fighter_form"):
     fighter_method = st.radio("Fighter Group Setup", ["Manual", "Auto by Points", "Random then Edit"])
     group_type = st.radio("Fighter Group Type", ["Flight", "Squadron"])
     fighter_group_name = st.text_input("Optional Name for Fighter Group")
-    experience_level = st.selectbox("Pilot Experience", ["Green", "Rookie", "Regular", "Veteran", "Elite"])
-    submitted = st.form_submit_button("Configure Fighters")
-
-if submitted:
-    fighter_selections = []
+    experience_level = st.selectbox("Pilot Experience", list(experience_cost_map.keys()))
 
     if fighter_method == "Manual":
         max_size = 4 if group_type == "Flight" else 12
@@ -98,8 +89,8 @@ if submitted:
             remaining = max_size - current_total
             if remaining <= 0:
                 break
-            count = st.sidebar.number_input(
-                f"{row['Fighter']} (PV {row['COST']})", 
+            count = st.number_input(
+                f"{row['Fighter']} (PV {row['COST']})",
                 0, remaining, 0, key=f"manual_{row['Fighter']}"
             )
             if count > 0:
@@ -107,7 +98,7 @@ if submitted:
                 current_total += count
 
     elif fighter_method == "Auto by Points":
-        max_points = st.sidebar.number_input("Max Points for Fighters", 0, 100, 10)
+        max_points = st.number_input("Max Points for Fighters", 0, 100, 10)
         size_limit = 4 if group_type == "Flight" else 12
         total = 0
         while total < max_points and len(fighter_selections) < size_limit:
@@ -120,16 +111,17 @@ if submitted:
         size = 4 if group_type == "Flight" else 12
         for i in range(size):
             row = filtered_fighters.sample(1, replace=True).iloc[0]
-            default_count = st.sidebar.number_input(
+            count = st.number_input(
                 f"{row['Fighter']} (PV {row['COST']})", 
-                0, size, 1, key=f"random_{i}_{row['Fighter']}_{i}"
+                0, size, 1, key=f"random_{i}_{row['Fighter']}"
             )
-            fighter_selections.extend([row["Fighter"]] * default_count)
-            if len(fighter_selections) >= size:
-                fighter_selections = fighter_selections[:size]
-                break
+            fighter_selections.extend([row["Fighter"]] * count)
+        if len(fighter_selections) > size:
+            fighter_selections = fighter_selections[:size]
 
-    # Validate and create group
+    submitted = st.form_submit_button("Add Fighter Group")
+
+if submitted:
     size = len(fighter_selections)
     if group_type == "Flight" and size != 4:
         st.sidebar.error("A Flight must contain exactly 4 fighters.")
