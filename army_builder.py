@@ -98,7 +98,7 @@ with st.sidebar.form("fighter_form"):
                 current_total += count
 
     elif fighter_method == "Auto by Points":
-        max_points = st.number_input("Max Points for Fighters", 0, 100, 10)
+        max_points = st.number_input("Max Points for Fighters", 0, 100, 10, key="auto_points")
         size_limit = 4 if group_type == "Flight" else 12
         total = 0
         while total < max_points and len(fighter_selections) < size_limit:
@@ -109,10 +109,10 @@ with st.sidebar.form("fighter_form"):
 
     elif fighter_method == "Random then Edit":
         size = 4 if group_type == "Flight" else 12
-        for i in range(size):
-            row = filtered_fighters.sample(1, replace=True).iloc[0]
+        sampled_fighters = filtered_fighters.sample(n=size, replace=True)
+        for i, row in sampled_fighters.iterrows():
             count = st.number_input(
-                f"{row['Fighter']} (PV {row['COST']})", 
+                f"{row['Fighter']} (PV {row['COST']})",
                 0, size, 1, key=f"random_{i}_{row['Fighter']}"
             )
             fighter_selections.extend([row["Fighter"]] * count)
@@ -131,6 +131,7 @@ if submitted:
         new_group = generate_fighter_group(fighter_selections, group_type)
         st.session_state.fighter_groups.append(new_group)
         st.sidebar.success(f"{group_type} added!")
+
 
 
 # Round up function
