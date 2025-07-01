@@ -61,7 +61,7 @@ for captain_name in filtered_captains["Name"]:
 round_up = lambda x: math.ceil(x)
 
 # Generate fighter group stats
-def generate_fighter_group(fighter_names, group_type):
+def generate_fighter_group(fighter_names, group_type, assigned_ship, fighter_group_name, experience_level, filtered_fighters, experience_cost_map):
     subset = filtered_fighters[filtered_fighters["Fighter"].isin(fighter_names)]
     counts = pd.Series(fighter_names).value_counts()
 
@@ -70,7 +70,6 @@ def generate_fighter_group(fighter_names, group_type):
         for name, count in counts.items()
     ])
 
-    # Scale stats by count
     for col in ["MAN", "DEF", "INT", "STR"]:
         expanded[col] = expanded[col] * expanded["count"]
 
@@ -114,8 +113,10 @@ def generate_fighter_group(fighter_names, group_type):
         "ORD": ordnance,
         "Qualities": qualities,
         "Experience": experience_level,
-        "PV": total_cost
+        "PV": total_cost,
+        "Assigned Ship": assigned_ship
     }
+
 
 # Fighter creation method
 st.sidebar.markdown("---")
