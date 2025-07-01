@@ -158,26 +158,26 @@ with st.sidebar.expander("🛠 Fighter Group Creator", expanded=True):
                 current_total += count
 
     elif fighter_method == "Auto by Points":
-    max_points = st.sidebar.number_input("Max Points for Fighters", min_value=1, max_value=100, value=10)
-    size_limit = 4 if group_type == "Flight" else 12
-
-    total_points = 0
-    fighter_selections = []
-
-    # Shuffle the list of fighters to vary selection
-    shuffled_fighters = filtered_fighters.sample(frac=1).reset_index(drop=True)
-
-    for _, row in shuffled_fighters.iterrows():
-        cost = row["COST"]
-        fighter_name = row["Fighter"]
-
-        # Add fighters one at a time while staying under point and size caps
-        while (
-            total_points + cost <= max_points and
-            len(fighter_selections) < size_limit
-        ):
-            fighter_selections.append(fighter_name)
-            total_points += cost
+        max_points = st.sidebar.number_input("Max Points for Fighters", min_value=1, max_value=100, value=10)
+        size_limit = 4 if group_type == "Flight" else 12
+    
+        total_points = 0
+        fighter_selections = []
+    
+        # Shuffle the list of fighters to vary selection
+        shuffled_fighters = filtered_fighters.sample(frac=1).reset_index(drop=True)
+    
+        for _, row in shuffled_fighters.iterrows():
+            cost = row["COST"]
+            fighter_name = row["Fighter"]
+    
+            # Add fighters one at a time while staying under point and size caps
+            while (
+                total_points + cost <= max_points and
+                len(fighter_selections) < size_limit
+            ):
+                fighter_selections.append(fighter_name)
+                total_points += cost
 
     elif fighter_method == "Random then Edit":
         size = 4 if group_type == "Flight" else 12
