@@ -166,6 +166,17 @@ with st.sidebar.expander("🛠 Fighter Group Creator", expanded=True):
             if total + row["COST"] <= max_points:
                 fighter_selections.append(row["Fighter"])
                 total += row["COST"]
+        # Enforce max_points after selection
+        final_fighters = []
+        final_total = 0
+        for fighter in fighter_selections:
+            cost = filtered_fighters[filtered_fighters["Fighter"] == fighter]["COST"].values[0]
+            if final_total + cost <= max_points:
+                final_fighters.append(fighter)
+                final_total += cost
+            else:
+                break
+        fighter_selections = final_fighters
 
     elif fighter_method == "Random then Edit":
         size = 4 if group_type == "Flight" else 12
