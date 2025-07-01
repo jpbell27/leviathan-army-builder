@@ -160,27 +160,25 @@ with st.sidebar.expander("🛠 Fighter Group Creator", expanded=True):
     elif fighter_method == "Auto by Points":
         max_points = st.number_input("Max Points for Fighters", min_value=1, max_value=100, value=10)
         size_limit = 4 if group_type == "Flight" else 12
-
-        total_points = 0
+        pilot_cost_per_fighter = experience_cost_map[experience_level]
+    
+        total_cost = 0
         fighter_selections = []
-
-        # Shuffle fighters to randomize selection order
+    
         shuffled_fighters = filtered_fighters.sample(frac=1).reset_index(drop=True)
-
+    
         for _, row in shuffled_fighters.iterrows():
-            cost = row["COST"]
-            name = row["Fighter"]
+            base_cost = row["COST"]
+            fighter_total_cost = base_cost + pilot_cost_per_fighter
+    
+            if (total_cost + fighter_total_cost) <= max_points and len(fighter_selections) < size_limit:
+                fighter_selections.append(row["Fighter"])
+                total_cost += fighter_total_cost
+            else:
+                continue  # try next fighter, in case a cheaper one fits
+    
+        st.markdown(f"Selected fighters cost (with pilots): **{total_cost} / {max_points}** PV")
 
-            # Only add if it fits within point and size limits
-            if total_points + cost <= max_points and len(fighter_selections) < size_limit:
-                fighter_selections.append(name)
-                total_points += cost
-
-            # Stop if limits are reached
-            if total_points >= max_points or len(fighter_selections) >= size_limit:
-                break
-
-        st.markdown(f"Selected fighters cost: **{total_points} / {max_points}** PV")
 
     elif fighter_method == "Random then Edit":
         size = 4 if group_type == "Flight" else 12
