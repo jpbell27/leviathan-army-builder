@@ -13,8 +13,6 @@ def load_data():
 
 ships_df, captains_df, fighters_df = load_data()
 
-
-# App title
 st.title("Aetherstream: Leviathan Army Builder")
 
 st.markdown(
@@ -22,11 +20,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Sidebar
 st.sidebar.header("Build Your Force")
 faction = st.sidebar.selectbox("Select Faction", ships_df["Faction"].unique())
 
-#getting ships by faction
 @st.cache_data
 def filter_by_faction(faction, ships_df, captains_df, fighters_df):
     return (
@@ -39,28 +35,29 @@ filtered_ships, filtered_captains, filtered_fighters = filter_by_faction(
     faction, ships_df, captains_df, fighters_df
 )
 
-# Allow multiple of the same ship
+# Ship selection
 st.sidebar.subheader("Ships")
 ship_counts = {}
 for ship_name in filtered_ships["Ship Name"]:
-    count = st.sidebar.number_input(f"{ship_name} (PV {filtered_ships[filtered_ships['Ship Name'] == ship_name]['Cost'].values[0]})", 0, 10, 0, key=f"ship_{ship_name}")
+    count = st.sidebar.number_input(
+        f"{ship_name} (PV {filtered_ships[filtered_ships['Ship Name'] == ship_name]['Cost'].values[0]})",
+        0, 10, 0, key=f"ship_{ship_name}")
     if count > 0:
         ship_counts[ship_name] = count
 
-# Allow multiple of the same captain
+# Captain selection
 st.sidebar.subheader("Captains")
 captain_counts = {}
 for captain_name in filtered_captains["Name"]:
-    count = st.sidebar.number_input(f"{captain_name} (PV {filtered_captains[filtered_captains['Name'] == captain_name]['Cost'].values[0]})", 0, 10, 0, key=f"captain_{captain_name}")
+    count = st.sidebar.number_input(
+        f"{captain_name} (PV {filtered_captains[filtered_captains['Name'] == captain_name]['Cost'].values[0]})",
+        0, 10, 0, key=f"captain_{captain_name}")
     if count > 0:
         captain_counts[captain_name] = count
 
-
-
-# Round up function
 round_up = lambda x: math.ceil(x)
 
-# Generate fighter group stats
+# Fighter group generator
 def generate_fighter_group(fighter_names, group_type, assigned_ship, fighter_group_name, experience_level, filtered_fighters, experience_cost_map):
     subset = filtered_fighters[filtered_fighters["Fighter"].isin(fighter_names)]
     counts = pd.Series(fighter_names).value_counts()
@@ -117,32 +114,23 @@ def generate_fighter_group(fighter_names, group_type, assigned_ship, fighter_gro
         "Assigned Ship": assigned_ship
     }
 
-
-# Fighter creation method
+# Fighter creation
 st.sidebar.markdown("---")
 
 with st.sidebar.expander("🛠 Fighter Group Creator", expanded=True):
     fighter_method = st.radio("Fighter Group Setup", ["Manual", "Auto by Points", "Random then Edit"])
     group_type = st.radio("Fighter Group Type", ["Flight", "Squadron"])
     fighter_group_name = st.text_input("Optional Name for Fighter Group")
-    
-    # Pilot Experience Level
     experience_level = st.selectbox("Pilot Experience", ["Green", "Rookie", "Regular", "Veteran", "Elite"])
     experience_cost_map = {
-        "Green": 0,
-        "Rookie": 1,
-        "Regular": 2,
-        "Veteran": 3,
-        "Elite": 4
+        "Green": 0, "Rookie": 1, "Regular": 2, "Veteran": 3, "Elite": 4
     }
 
-    # Session state to store fighter groups
     if "fighter_groups" not in st.session_state:
         st.session_state.fighter_groups = []
 
     fighter_selections = []
 
-    # Fighter selection logic
     if fighter_method == "Manual":
         max_size = 4 if group_type == "Flight" else 12
         current_total = 0
@@ -150,10 +138,7 @@ with st.sidebar.expander("🛠 Fighter Group Creator", expanded=True):
             remaining = max_size - current_total
             if remaining <= 0:
                 break
-            count = st.number_input(
-                f"{row['Fighter']} (PV {row['COST']})", 
-                0, remaining, 0, key=f"manual_{row['Fighter']}"
-            )
+            count = st.number_input(f"{row['Fighter']} (PV {row['COST']})", 0, remaining, 0, key=f"manual_{row['Fighter']}")
             if count > 0:
                 fighter_selections.extend([row["Fighter"]] * count)
                 current_total += count
@@ -161,40 +146,32 @@ with st.sidebar.expander("🛠 Fighter Group Creator", expanded=True):
     elif fighter_method == "Auto by Points":
         max_points = st.number_input("Max Points for Fighters", min_value=1, max_value=100, value=10)
         size_limit = 4 if group_type == "Flight" else 12
-        pilot_cost_per_fighter = experience_cost_map[experience_level]
-    
+        pilot_cost = experience_cost_map[experience_level]
         total_cost = 0
-        fighter_selections = []
-    
         shuffled_fighters = filtered_fighters.sample(frac=1).reset_index(drop=True)
-    
-        for _, row in shuffled_fighters.iterrows():
-            base_cost = row["COST"]
-            fighter_total_cost = base_cost + pilot_cost_per_fighter
-    
-            if (total_cost + fighter_total_cost) <= max_points and len(fighter_selections) < size_limit:
-                fighter_selections.append(row["Fighter"])
-                total_cost += fighter_total_cost
-            else:
-                continue  # try next fighter, in case a cheaper one fits
-    
-        st.markdown(f"Selected fighters cost (with pilots): **{total_cost} / {max_points}** PV")
 
+        for _, row in shuffled_fighters.iterrows():
+            total = row["COST"] + pilot_cost
+            if (total_cost + total <= max_points) and len(fighter_selections) < size_limit:
+                fighter_selections.append(row["Fighter"])
+                total_cost += total
+
+        st.markdown(f"Selected fighters cost: **{total_cost} / {max_points}** PV")
 
     elif fighter_method == "Random then Edit":
         size = 4 if group_type == "Flight" else 12
         for i in range(size):
-            row = filtered_fighters.sample(1, replace=True).iloc[0]
-            default_count = st.number_input(
-                f"{row['Fighter']} (PV {row['COST']})", 
-                0, size, 1, key=f"random_{i}_{row['Fighter']}_{i}"
-            )
-            fighter_selections.extend([row["Fighter"]] * default_count)
+            row = filtered_fighters.sample(1).iloc[0]
+            count = st.number_input(f"{row['Fighter']} (PV {row['COST']})", 0, size, 1, key=f"random_{i}_{row['Fighter']}")
+            fighter_selections.extend([row["Fighter"]] * count)
             if len(fighter_selections) >= size:
                 fighter_selections = fighter_selections[:size]
                 break
 
-    # Add group button
+    # Assign fighter group to a ship
+    available_ships = [name for name, count in ship_counts.items() for _ in range(count)]
+    assigned_ship = st.selectbox("Assign this Fighter Group to a Ship", ["Unassigned"] + available_ships)
+
     if st.button("Add Fighter Group"):
         size = len(fighter_selections)
         if group_type == "Flight" and size != 4:
@@ -202,11 +179,13 @@ with st.sidebar.expander("🛠 Fighter Group Creator", expanded=True):
         elif group_type == "Squadron" and (size < 1 or size > 12):
             st.error("A Squadron must contain between 1 and 12 fighters.")
         else:
-            new_group = generate_fighter_group(fighter_selections, group_type)
+            new_group = generate_fighter_group(
+                fighter_selections, group_type, assigned_ship,
+                fighter_group_name, experience_level,
+                filtered_fighters, experience_cost_map
+            )
             st.session_state.fighter_groups.append(new_group)
             st.success(f"{group_type} added!")
-
-
 
 # Build force list
 force = []
@@ -224,10 +203,8 @@ for name, count in captain_counts.items():
         force.append({"Type": "Captain", "Name": name, "PV": row["Cost"]})
         total_pv += row["Cost"]
 
-# Create a list of captains to assign
 available_captains = [name for name, count in captain_counts.items() for _ in range(count)]
 
-# Track assignments
 if "ship_captain_assignments" not in st.session_state:
     st.session_state.ship_captain_assignments = {}
 
@@ -237,33 +214,11 @@ for i, entry in enumerate(force):
     if entry["Type"] == "Ship":
         ship_name = entry["Ship Name"]
         key = f"assign_captain_{i}"
-        selected = st.selectbox(
-            f"Captain for {ship_name} #{i + 1}",
-            ["None"] + available_captains,
-            key=key
-        )
-        st.session_state.ship_captain_assignments[key] = {
-            "ship": ship_name,
-            "captain": selected
-        }
+        selected = st.selectbox(f"Captain for {ship_name} #{i + 1}", ["None"] + available_captains, key=key)
+        st.session_state.ship_captain_assignments[key] = {"ship": ship_name, "captain": selected}
 
-# Count how many times each captain is assigned
-assigned_counts = {}
-for assignment in st.session_state.ship_captain_assignments.values():
-    cap = assignment["captain"]
-    if cap and cap != "None":
-        assigned_counts[cap] = assigned_counts.get(cap, 0) + 1
-
-# Compare to how many times that captain was selected
-for cap, assigned in assigned_counts.items():
-    allowed = captain_counts.get(cap, 0)
-    if assigned > allowed:
-        st.warning(f"⚠️ Captain '{cap}' assigned {assigned} times, but only {allowed} selected.")
-        
-# Fighter groups with remove buttons
-# Track index of group to remove
+# Show fighter groups with ship assignments
 index_to_remove = None
-
 for i, group in enumerate(st.session_state.fighter_groups):
     col1, col2 = st.columns([5, 1])
     with col1:
@@ -271,41 +226,38 @@ for i, group in enumerate(st.session_state.fighter_groups):
         st.markdown(f"Fighters: {', '.join(group['Fighters'])}")
         st.markdown(f"Stats – MAN: {group['MAN']}, DEF: {group['DEF']}, INT: {group['INT']}, STR: {group['STR']}, ORD: {group['ORD']}")
         st.markdown(f"Qualities: {group['Qualities']} | Experience: {group['Experience']}")
+        st.markdown(f"🛡 Assigned Ship: {group['Assigned Ship']}")
     with col2:
         if st.button("Remove", key=f"remove_{i}"):
             index_to_remove = i
     st.markdown("---")
 
-# Apply removal outside loop
 if index_to_remove is not None:
     st.session_state.fighter_groups.pop(index_to_remove)
 
-# Append remaining fighter groups to force
-for fighter_group in st.session_state.fighter_groups:
-    force.append(fighter_group)
-    total_pv += fighter_group["PV"]
+# Final force
+for group in st.session_state.fighter_groups:
+    force.append(group)
+    total_pv += group["PV"]
 
-# Attach assigned captains to ships in force list
+# Attach captain assignments
 for i, entry in enumerate(force):
     if entry["Type"] == "Ship":
         key = f"assign_captain_{i}"
         assignment = st.session_state.ship_captain_assignments.get(key)
-        if assignment and assignment["captain"] != "None":
-            entry["Captain"] = assignment["captain"]
-        else:
-            entry["Captain"] = "Unassigned"
+        entry["Captain"] = assignment["captain"] if assignment and assignment["captain"] != "None" else "Unassigned"
 
-# Main output
+# Final display
 st.subheader("Current Force")
 st.write(pd.DataFrame(force))
 st.markdown(f"**Total PV: {total_pv}**")
 
-# Convert all objects in force list to be JSON serializable
-serializable_force = []
-for entry in force:
-    clean_entry = {k: (int(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else v) for k, v in entry.items()}
-    serializable_force.append(clean_entry)
+# Export
+serializable_force = [
+    {k: (int(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else v) for k, v in entry.items()}
+    for entry in force
+]
 
-# Download buttons
 st.download_button("Download JSON", data=json.dumps(serializable_force, indent=2), file_name="force.json")
 st.download_button("Download CSV", data=pd.DataFrame(serializable_force).to_csv(index=False), file_name="force.csv")
+
