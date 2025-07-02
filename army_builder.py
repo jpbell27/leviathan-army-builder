@@ -145,7 +145,7 @@ with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
     st.sidebar.markdown("---")
     
     with st.sidebar.expander("🛠 Fighter Group Creator", expanded=False):
-        fighter_method = st.radio("Fighter Group Setup", ["Manual", "Auto by Points", "Random then Edit"])
+        fighter_method = st.radio("Fighter Group Setup", ["Manual", "Auto by Points", "Random then Edit", "Optimize by Stat"])
         group_type = st.radio("Fighter Group Type", ["Flight", "Squadron"])
         fighter_group_name = st.text_input("Optional Name for Fighter Group")
         experience_level = st.selectbox("Pilot Experience", ["Green", "Rookie", "Regular", "Veteran", "Elite"])
