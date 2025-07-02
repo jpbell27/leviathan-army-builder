@@ -193,6 +193,7 @@ with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
                 fighter_selections.extend([row["Fighter"]] * count)
                 if len(fighter_selections) >= size:
                     fighter_selections = fighter_selections[:size]
+                    break
 
 
         elif fighter_method == "Optimize by Stat":
@@ -227,7 +228,6 @@ with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
             st.markdown(
                 f"Selected fighters (optimized for **{optimize_stat}**) cost: **{total_cost} / {max_points}** PV"
             )
-            break
     
         # Assign fighter group to a ship
         available_ships = [name for name, count in ship_counts.items() for _ in range(count)]
