@@ -34,17 +34,17 @@ faction = st.sidebar.selectbox("Select Faction", ships_df["Faction"].unique())
 with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
 
 @st.cache_data
-def filter_by_faction(faction, ships_df, captains_df, fighters_df, premade_df):
-    return (
-        ships_df[ships_df["Faction"] == faction],
-        captains_df[captains_df["Faction"] == faction],
-        fighters_df[fighters_df["Faction"] == faction],
-        premade_df[premade_df["Faction"] == faction]
+    def filter_by_faction(faction, ships_df, captains_df, fighters_df, premade_df):
+        return (
+            ships_df[ships_df["Faction"] == faction],
+            captains_df[captains_df["Faction"] == faction],
+            fighters_df[fighters_df["Faction"] == faction],
+            premade_df[premade_df["Faction"] == faction]
+        )
+    
+    filtered_ships, filtered_captains, filtered_fighters, filtered_premade = filter_by_faction(
+        faction, ships_df, captains_df, fighters_df, premade_df
     )
-
-filtered_ships, filtered_captains, filtered_fighters, filtered_premade = filter_by_faction(
-    faction, ships_df, captains_df, fighters_df, premade_df
-)
 
     # Ship selection
     st.sidebar.subheader("Ships")
