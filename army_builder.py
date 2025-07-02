@@ -9,9 +9,10 @@ def load_data():
     ships = pd.read_csv("ships.csv")
     captains = pd.read_csv("captains.csv")
     fighters = pd.read_csv("fighters.csv")
-    return ships, captains, fighters
+    premade_fighters = pd.read_csv("Premade_fighters.csv")
+    return ships, captains, fighters, premade_fighters
 
-ships_df, captains_df, fighters_df = load_data()
+ships_df, captains_df, fighters_df, premade_df = load_data()
 
 st.title("Aetherstream: Leviathan Army Builder")
 
@@ -24,15 +25,16 @@ st.sidebar.header("Build Your Force")
 faction = st.sidebar.selectbox("Select Faction", ships_df["Faction"].unique())
 
 @st.cache_data
-def filter_by_faction(faction, ships_df, captains_df, fighters_df):
+def filter_by_faction(faction, ships_df, captains_df, fighters_df, premade_df):
     return (
         ships_df[ships_df["Faction"] == faction],
         captains_df[captains_df["Faction"] == faction],
-        fighters_df[fighters_df["Faction"] == faction]
+        fighters_df[fighters_df["Faction"] == faction],
+        premade_df[premade_df["Faction"] == faction]
     )
 
-filtered_ships, filtered_captains, filtered_fighters = filter_by_faction(
-    faction, ships_df, captains_df, fighters_df
+filtered_ships, filtered_captains, filtered_fighters, filtered_premade = filter_by_faction(
+    faction, ships_df, captains_df, fighters_df, premade_df
 )
 
 # Ship selection
@@ -54,6 +56,24 @@ for captain_name in filtered_captains["Name"]:
         0, 10, 0, key=f"captain_{captain_name}")
     if count > 0:
         captain_counts[captain_name] = count
+
+# Pre-made Fighter Groups
+st.sidebar.subheader("Pre-made Fighter Groups")
+selected_premade = {}
+if not filtered_premade.empty:
+    for i, row in filtered_premade.iterrows():
+        group_name = row["Name"]
+        group_strength = row["Strength"]
+        group_points = row["Points"]
+        selected = st.sidebar.checkbox(f"{group_name} ({group_strength}, PV {group_points})", key=f"premade_{group_name}_{i}")
+        if selected:
+            # Optional: choose carrier ship
+            carrier = st.sidebar.selectbox(f"Assign '{group_name}' to Carrier", options=list(ship_counts.keys()) or ["Unassigned"], key=f"carrier_{group_name}_{i}")
+            selected_premade[group_name] = {
+                "Strength": group_strength,
+                "PV": group_points,
+                "Carrier": carrier
+            }
 
 round_up = lambda x: math.ceil(x)
 
@@ -239,6 +259,16 @@ if index_to_remove is not None:
 for group in st.session_state.fighter_groups:
     force.append(group)
     total_pv += group["PV"]
+
+# Add pre-made fighter groups to force
+for group_name, details in selected_premade.items():
+    force.append({
+        "Type": f"Pre-made {details['Strength']}",
+        "Name": group_name,
+        "Carrier": details["Carrier"],
+        "PV": int(details["PV"])
+    })
+    total_pv += int(details["PV"])
 
 # Attach captain assignments
 for i, entry in enumerate(force):
