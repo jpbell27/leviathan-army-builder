@@ -34,13 +34,15 @@ This Streamlit app allows you to quickly build and customize a legal force for A
 
     Choose a Pilot Experience Level: this affects cost, from Green (0) to Elite (4) points per fighter.
 
-You can create fighter groups using one of three methods:
+You can create fighter groups using one of ~three~ four! methods:
 
     Manual: Select specific fighter types and quantities manually (up to group max).
 
     Auto by Points: The app randomly selects fighters up to your specified PV cap.
 
     Random then Edit: A random group is generated and you can tweak individual fighter counts.
+
+    _Experimental_: Optimize for a stat. Attempt to generate a flight/squadron to maximize a certain stat! Still in trials, so use with caution.
 
 💡 Optional: Enter a custom name for your group (otherwise one is auto-generated).
 
