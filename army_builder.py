@@ -193,7 +193,41 @@ with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
                 fighter_selections.extend([row["Fighter"]] * count)
                 if len(fighter_selections) >= size:
                     fighter_selections = fighter_selections[:size]
+
+
+        elif fighter_method == "Optimize by Stat":
+            optimize_stat = st.selectbox("Stat to Optimize", ["ORD", "MAN", "DEF", "INT", "STR"])
+            max_points = st.number_input("Max Points for Fighters", min_value=1, max_value=100, value=10)
+            size_limit = 4 if group_type == "Flight" else 12
+            pilot_cost = experience_cost_map[experience_level]
+        
+            scored = []
+            for _, row in filtered_fighters.iterrows():
+                total_cost_per_fighter = row["COST"] + pilot_cost
+                stat_value = row[optimize_stat]
+                if total_cost_per_fighter > 0:
+                    score = stat_value / total_cost_per_fighter
+                    scored.append((score, row["Fighter"], total_cost_per_fighter))
+        
+            scored.sort(reverse=True)
+        
+            fighter_selections = []
+            total_cost = 0
+        
+            for score, fighter_name, cost in scored:
+                if len(fighter_selections) >= size_limit:
                     break
+                if total_cost + cost <= max_points:
+                    fighter_selections.append(fighter_name)
+                    total_cost += cost
+        
+            if total_cost > max_points:
+                st.warning(f"Warning: total PV {total_cost} exceeds the max {max_points}! Something may be wrong.")
+        
+            st.markdown(
+                f"Selected fighters (optimized for **{optimize_stat}**) cost: **{total_cost} / {max_points}** PV"
+            )
+            break
     
         # Assign fighter group to a ship
         available_ships = [name for name, count in ship_counts.items() for _ in range(count)]
