@@ -10,6 +10,9 @@ def load_data():
     captains = pd.read_csv("captains.csv")
     fighters = pd.read_csv("fighters.csv")
     premade_fighters = pd.read_csv("Premade_fighters.csv")
+    # Strip whitespace from all faction columns
+    for df in [ships, captains, fighters, premade_fighters]:
+        df["Faction"] = df["Faction"].str.strip()
     return ships, captains, fighters, premade_fighters
 
 ships_df, captains_df, fighters_df, premade_df = load_data()
