@@ -13,12 +13,11 @@ def load_data():
 
     # Strip whitespace from column names and 'Faction' values
     for df in [ships, captains, fighters, premade_fighters]:
-        df.columns = df.columns.str.strip()            # Strip column names
+        df.columns = df.columns.str.strip()
         if "Faction" in df.columns:
-            df["Faction"] = df["Faction"].str.strip()  # Strip values in Faction column
+            df["Faction"] = df["Faction"].str.strip()
 
     return ships, captains, fighters, premade_fighters
-
 
 ships_df, captains_df, fighters_df, premade_df = load_data()
 
@@ -31,53 +30,52 @@ st.markdown(
 
 st.sidebar.header("Build Your Force")
 faction = st.sidebar.selectbox("Select Faction", ships_df["Faction"].unique())
-with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
 
 @st.cache_data
-    def filter_by_faction(faction, ships_df, captains_df, fighters_df, premade_df):
-        return (
-            ships_df[ships_df["Faction"] == faction],
-            captains_df[captains_df["Faction"] == faction],
-            fighters_df[fighters_df["Faction"] == faction],
-            premade_df[premade_df["Faction"] == faction]
-        )
-    
+def filter_by_faction(faction, ships_df, captains_df, fighters_df, premade_df):
+    return (
+        ships_df[ships_df["Faction"] == faction],
+        captains_df[captains_df["Faction"] == faction],
+        fighters_df[fighters_df["Faction"] == faction],
+        premade_df[premade_df["Faction"] == faction]
+    )
+
+with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
     filtered_ships, filtered_captains, filtered_fighters, filtered_premade = filter_by_faction(
         faction, ships_df, captains_df, fighters_df, premade_df
     )
 
     # Ship selection
-    st.sidebar.subheader("Ships")
+    st.subheader("Ships")
     ship_counts = {}
     for ship_name in filtered_ships["Ship Name"]:
-        count = st.sidebar.number_input(
+        count = st.number_input(
             f"{ship_name} (PV {filtered_ships[filtered_ships['Ship Name'] == ship_name]['Cost'].values[0]})",
             0, 10, 0, key=f"ship_{ship_name}")
         if count > 0:
             ship_counts[ship_name] = count
-    
+
     # Captain selection
-    st.sidebar.subheader("Captains")
+    st.subheader("Captains")
     captain_counts = {}
     for captain_name in filtered_captains["Name"]:
-        count = st.sidebar.number_input(
+        count = st.number_input(
             f"{captain_name} (PV {filtered_captains[filtered_captains['Name'] == captain_name]['Cost'].values[0]})",
             0, 10, 0, key=f"captain_{captain_name}")
         if count > 0:
             captain_counts[captain_name] = count
-    
+
     # Pre-made Fighter Groups
-    st.sidebar.subheader("Pre-made Fighter Groups")
+    st.subheader("Pre-made Fighter Groups")
     selected_premade = {}
     if not filtered_premade.empty:
         for i, row in filtered_premade.iterrows():
             group_name = row["Name"]
             group_strength = row["Strength"]
             group_points = row["Points"]
-            selected = st.sidebar.checkbox(f"{group_name} ({group_strength}, PV {group_points})", key=f"premade_{group_name}_{i}")
+            selected = st.checkbox(f"{group_name} ({group_strength}, PV {group_points})", key=f"premade_{group_name}_{i}")
             if selected:
-                # Optional: choose carrier ship
-                carrier = st.sidebar.selectbox(f"Assign '{group_name}' to Carrier", options=list(ship_counts.keys()) or ["Unassigned"], key=f"carrier_{group_name}_{i}")
+                carrier = st.selectbox(f"Assign '{group_name}' to Carrier", options=list(ship_counts.keys()) or ["Unassigned"], key=f"carrier_{group_name}_{i}")
                 selected_premade[group_name] = {
                     "Strength": group_strength,
                     "PV": group_points,
