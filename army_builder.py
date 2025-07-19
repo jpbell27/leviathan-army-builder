@@ -125,6 +125,18 @@ with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
         base_cost = float((expanded["COST"] * expanded["count"]).sum())
         pilot_experience_cost = experience_cost_map[experience_level] * int(expanded["count"].sum())
         total_cost = round_up(base_cost + pilot_experience_cost)
+
+        print("===== DEBUG: Fighter Group Cost Breakdown =====")
+        print(f"Group Type: {group_type}")
+        print(f"Fighters: {fighter_names}")
+        print(f"Total Fighters: {expanded['count'].sum()}")
+        print(f"Experience Level: {experience_level}")
+        print(f"Experience Cost per Pilot: {experience_cost_map[experience_level]}")
+        print(f"Pilot XP Cost (computed): {pilot_experience_cost}")
+        print(f"Base Cost: {base_cost}")
+        print(f"TOTAL PV: {total_cost}")
+        print("===============================================")
+
     
         return {
             "Type": group_type,
