@@ -340,6 +340,35 @@ st.subheader("Current Force")
 st.write(pd.DataFrame(force))
 st.markdown(f"**Total PV: {total_pv}**")
 
+# Improved Markdown-Based Force Output
+markdown_output = "## 🛡 Ships\n"
+ship_index = 1
+for i, entry in enumerate(force):
+    if entry["Type"] == "Ship":
+        ship_name = entry["Ship Name"]
+        captain = entry.get("Captain", "Unassigned")
+        markdown_output += f"- **{ship_name} #{ship_index}** (Captain: {captain}, PV: {entry['PV']})\n"
+        ship_index += 1
+
+markdown_output += "\n## ✈️ Fighter Groups\n"
+for group in st.session_state.fighter_groups:
+    markdown_output += (
+        f"- **{group['Name']}** ({group['Type']}, PV: {group['PV']}) - Assigned to: {group['Assigned Ship']}\n"
+        f"  - Fighters: {', '.join(group['Fighters'])}\n"
+        f"  - Stats: MAN {group['MAN']}, DEF {group['DEF']}, INT {group['INT']}, STR {group['STR']}, ORD {group['ORD']}\n"
+        f"  - Qualities: {group['Qualities']} | Experience: {group['Experience']}\n"
+    )
+
+markdown_output += "\n## 🧩 Pre-made Fighter Groups\n"
+for name, details in selected_premade.items():
+    markdown_output += f"- **{name}** ({details['Strength']}, PV: {details['PV']}) - Carrier: {details['Carrier']}\n"
+
+markdown_output += "\n---\n"
+markdown_output += f"### 🧮 Total PV: {total_pv}"
+
+st.markdown(markdown_output)
+
+
 # Export
 serializable_force = [
     {k: (int(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else v) for k, v in entry.items()}
