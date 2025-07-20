@@ -167,15 +167,21 @@ with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
         if fighter_method == "Manual":
             max_size = 4 if group_type == "Flight" else 12
             current_total = 0
+            manual_counts = {}
+            max_size = 4 if group_type == "Flight" else 12
             for idx, row in filtered_fighters.iterrows():
-                remaining = max_size - current_total
-                if remaining <= 0:
-                    break
-                count = st.number_input(f"{row['Fighter']} (PV {row['COST']})", 0, remaining, 0, key=f"manual_{idx}_{row['Fighter']}_{group_type}_{fighter_method}")
-                if count > 0:
-                    fighter_selections.extend([row["Fighter"]] * count)
-                    current_total += count
-    
+                key = f"manual_{idx}_{row['Fighter']}_{group_type}_{fighter_method}"
+                count = st.number_input(f"{row['Fighter']} (PV {row['COST']})",0, max_size, 0,key=key)
+                manual_counts[row["Fighter"]] = count
+
+            fighter_selections = []
+            current_total = 0
+            for fighter, count in manual_counts.items():
+                 for _ in range(count):
+                     if current_total < max_size:
+                         fighter_selections.append(fighter)
+                         current_total += 1
+        
         elif fighter_method == "Auto by Points":
             max_points = st.number_input("Max Points for Fighters", min_value=1, max_value=100, value=10)
             size_limit = 4 if group_type == "Flight" else 12
