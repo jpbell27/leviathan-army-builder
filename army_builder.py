@@ -170,7 +170,7 @@ with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
                 remaining = max_size - current_total
                 if remaining <= 0:
                     break
-                count = st.number_input(f"{row['Fighter']} (PV {row['COST']})", 0, remaining, 0, key=f"manual_{row['Fighter']}")
+                count = st.number_input(f"{row['Fighter']} (PV {row['COST']})", 0, remaining, 0, key=f"manual_{row['Fighter']}_{group_type}_{fighter_method}")
                 if count > 0:
                     fighter_selections.extend([row["Fighter"]] * count)
                     current_total += count
@@ -194,7 +194,7 @@ with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
             size = 4 if group_type == "Flight" else 12
             for i in range(size):
                 row = filtered_fighters.sample(1).iloc[0]
-                count = st.number_input(f"{row['Fighter']} (PV {row['COST']})", 0, size, 1, key=f"random_{i}_{row['Fighter']}")
+                count = st.number_input(f"{row['Fighter']} (PV {row['COST']})", 0, size, 1, key=f"random_{i}_{row['Fighter']}_{group_type}_{fighter_method}")
                 fighter_selections.extend([row["Fighter"]] * count)
                 if len(fighter_selections) >= size:
                     fighter_selections = fighter_selections[:size]
