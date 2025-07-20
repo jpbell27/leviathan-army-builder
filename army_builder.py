@@ -124,9 +124,9 @@ with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
         qualities = ", ".join(sorted(set(q for q in expanded["Qualities"].dropna())))
         base_cost = float((expanded["COST"] * expanded["count"]).sum())
         if group_type == "Flight":
-            pilot_experience_cost = round_up(experience_cost_map[experience_level] * len(fighter_names) / 2)
+            pilot_experience_cost = experience_cost_map[experience_level]
         else:
-            pilot_experience_cost = experience_cost_map[experience_level] * len(fighter_names)
+            pilot_experience_cost = experience_cost_map[experience_level] * 3
 
         total_cost = round_up(base_cost + pilot_experience_cost)
 
