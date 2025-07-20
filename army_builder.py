@@ -341,7 +341,7 @@ st.write(pd.DataFrame(force))
 st.markdown(f"**Total PV: {total_pv}**")
 
 # Improved Markdown-Based Force Output
-markdown_output = "## 🛡 Ships\n"
+markdown_output = "## Ships\n"
 ship_index = 1
 for i, entry in enumerate(force):
     if entry["Type"] == "Ship":
@@ -350,7 +350,7 @@ for i, entry in enumerate(force):
         markdown_output += f"- **{ship_name} #{ship_index}** (Captain: {captain}, PV: {entry['PV']})\n"
         ship_index += 1
 
-markdown_output += "\n## ✈️ Fighter Groups\n"
+markdown_output += "\n## Fighter Groups\n"
 for group in st.session_state.fighter_groups:
     markdown_output += (
         f"- **{group['Name']}** ({group['Type']}, PV: {group['PV']}) - Assigned to: {group['Assigned Ship']}\n"
@@ -359,7 +359,7 @@ for group in st.session_state.fighter_groups:
         f"  - Qualities: {group['Qualities']} | Experience: {group['Experience']}\n"
     )
 
-markdown_output += "\n## 🧩 Pre-made Fighter Groups\n"
+markdown_output += "\n## Pre-made Fighter Groups\n"
 for name, details in selected_premade.items():
     markdown_output += f"- **{name}** ({details['Strength']}, PV: {details['PV']}) - Carrier: {details['Carrier']}\n"
 
@@ -368,6 +368,12 @@ markdown_output += f"### 🧮 Total PV: {total_pv}"
 
 st.markdown(markdown_output)
 
+st.download_button(
+    label="📥 Download Force List (Markdown)",
+    data=markdown_output,
+    file_name="force_list.md",
+    mime="text/markdown"
+)
 
 # Export
 serializable_force = [
