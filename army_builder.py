@@ -34,11 +34,12 @@ faction = st.sidebar.selectbox("Select Faction", ships_df["Faction"].unique())
 @st.cache_data
 def filter_by_faction(faction, ships_df, captains_df, fighters_df, premade_df):
     return (
-        ships_df[ships_df["Faction"] == faction],
-        captains_df[captains_df["Faction"] == faction],
-        fighters_df[fighters_df["Faction"] == faction],
-        premade_df[premade_df["Faction"] == faction]
+        ships_df[ships_df["Faction"] == faction].sort_values(by="Ship Name").reset_index(drop=True),
+        captains_df[captains_df["Faction"] == faction].sort_values(by="Name").reset_index(drop=True),
+        fighters_df[fighters_df["Faction"] == faction].sort_values(by="Fighter").reset_index(drop=True),
+        premade_df[premade_df["Faction"] == faction].sort_values(by="Name").reset_index(drop=True)
     )
+
 
 with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
     filtered_ships, filtered_captains, filtered_fighters, filtered_premade = filter_by_faction(
@@ -166,15 +167,21 @@ with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
         if fighter_method == "Manual":
             max_size = 4 if group_type == "Flight" else 12
             current_total = 0
+            manual_counts = {}
+            max_size = 4 if group_type == "Flight" else 12
             for idx, row in filtered_fighters.iterrows():
-                remaining = max_size - current_total
-                if remaining <= 0:
-                    break
-                count = st.number_input(f"{row['Fighter']} (PV {row['COST']})", 0, remaining, 0, key=f"manual_{row['Fighter']}_{group_type}_{fighter_method}")
-                if count > 0:
-                    fighter_selections.extend([row["Fighter"]] * count)
-                    current_total += count
-    
+                key = f"manual_{idx}_{row['Fighter']}_{group_type}_{fighter_method}"
+                count = st.number_input(f"{row['Fighter']} (PV {row['COST']})",0, max_size, 0,key=key)
+                manual_counts[row["Fighter"]] = count
+
+            fighter_selections = []
+            current_total = 0
+            for fighter, count in manual_counts.items():
+                 for _ in range(count):
+                     if current_total < max_size:
+                         fighter_selections.append(fighter)
+                         current_total += 1
+        
         elif fighter_method == "Auto by Points":
             max_points = st.number_input("Max Points for Fighters", min_value=1, max_value=100, value=10)
             size_limit = 4 if group_type == "Flight" else 12
@@ -189,12 +196,17 @@ with st.sidebar.expander("⚙️ Configure Your Force", expanded=False):
                     total_cost += total
     
             st.markdown(f"Selected fighters cost: **{total_cost} / {max_points}** PV")
-    
+            
         elif fighter_method == "Random then Edit":
             size = 4 if group_type == "Flight" else 12
-            for i in range(size):
-                row = filtered_fighters.sample(1).iloc[0]
-                count = st.number_input(f"{row['Fighter']} (PV {row['COST']})", 0, size, 1, key=f"random_{i}_{row['Fighter']}_{group_type}_{fighter_method}")
+            sampled_fighters = filtered_fighters.sample(n=size, replace=True).reset_index(drop=True)
+        
+            for i, row in sampled_fighters.iterrows():
+                count = st.number_input(
+                    f"{row['Fighter']} (PV {row['COST']})", 
+                    0, size, 1, 
+                    key=f"random_{i}_{row['Fighter']}_{group_type}_{fighter_method}"
+                )
                 fighter_selections.extend([row["Fighter"]] * count)
                 if len(fighter_selections) >= size:
                     fighter_selections = fighter_selections[:size]
