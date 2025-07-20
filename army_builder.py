@@ -364,12 +364,12 @@ for name, details in selected_premade.items():
     markdown_output += f"- **{name}** ({details['Strength']}, PV: {details['PV']}) - Carrier: {details['Carrier']}\n"
 
 markdown_output += "\n---\n"
-markdown_output += f"### 🧮 Total PV: {total_pv}"
+markdown_output += f"### Total PV: {total_pv}"
 
 st.markdown(markdown_output)
 
 st.download_button(
-    label="📥 Download Force List (Markdown)",
+    label="Download Force List (Markdown)",
     data=markdown_output,
     file_name="force_list.md",
     mime="text/markdown"
